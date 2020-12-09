@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,9 +25,9 @@ switch (args[0])
 
 async Task QueryHotel()
 {
-    using (System.IO.StreamWriter file = new System.IO.StreamWriter("hotels.md"))
+    using (System.IO.StreamWriter file = new System.IO.StreamWriter("hotels.md", false, Encoding.UTF8))
     {
-        foreach (var hotel in await context.Hotels.ToArrayAsync())
+        foreach (var hotel in await context.Hotels.Include(x => x.RoomTypes).ThenInclude(x => x.Price).Include(x => x.Specials).ToArrayAsync())
         {
             await file.WriteLineAsync($"# {hotel.Name}");
             await file.WriteLineAsync();
@@ -148,8 +148,10 @@ class Hotel
 {
     public int Id { get; set; }
 
+    [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    [MaxLength(200)]
     public string Address { get; set; } = string.Empty;
 
     public List<HotelSpecial> Specials { get; set; } = new();
@@ -176,10 +178,13 @@ class RoomType
 
     public int HotelId { get; set; }
 
+    [MaxLength(100)]
     public string Title { get; set; } = string.Empty;
 
+    [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
+    [MaxLength(50)]
     public string Size { get; set; } = string.Empty;
 
     public bool DisabilityAccessible { get; set; }
